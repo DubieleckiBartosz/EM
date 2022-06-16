@@ -1,0 +1,33 @@
+version: '3.4'
+
+services:
+  eventmanagement.api:
+    image: ${DOCKER_REGISTRY-}eventmanagementapi
+    build:
+      context: .
+      dockerfile: EventManagement.API/Dockerfile
+    depends_on: [ mssql ]
+    ports:
+        - "8000:80"
+    networks:
+        - em-system-network
+  mssql: 
+    build:
+        context: .
+        dockerfile: sql.Dockerfile
+    restart: always
+    environment: 
+      ACCEPT_EULA: "Y"
+      SA_PASSWORD: Password_123BD
+    ports: 
+      - "1440:1433"
+    #volumes: 
+    #  - "sqldata:/var/opt/mssql"
+    networks:
+        - em-system-network
+
+networks:
+  em-system-network: {}
+
+#volumes: 
+#  sqldata:

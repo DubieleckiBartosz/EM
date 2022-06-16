@@ -1,0 +1,277 @@
+﻿
+Kowalski ma firme, która zajmuje się organizacją różnych wydarzeń i wraz z rozwojem firmy postanowił zlecić stworzenie programu, 
+który pomoże zautomatyzować proces planowania. Program ma mieć takie funkcjonalności jak:
+
+	- Tworzenie wydarzenia
+	- Odwołanie wydarzenia
+	- Zmiana widoczności wydarzenia
+	- Aktualizacja poszczególnych danych wydarzenia
+	- Dodawanie obrazów do wydarzenia
+	- Rejestracja nowych wykonawców
+	- Aktualizacja danych wykonawców
+	- Rejestracja zwykłych uzytkowników
+	- Tworzenie zgłoszeń przez użytkowników z rolą wykonawcy
+	- Aktualizacja zgłoszenia 
+	- Proces rozpatrywania zgłoszenia
+	- Tworzenie propozycji wystąpienia w evencie dla danego wykonawcy 
+	- Usuwanie propozycji
+	- Tworzenie opinii przez uzytkowników 
+	- Usuwanie opinii
+    - aktualizacja opinii
+ 
+ Do zadań w tle związanych głównie ze zmianami statusów, które odbywają się po jakimś czasie (jeśli biznes na to pozwala ofc)
+ np ustawianie statusu na Realized w chwili zakończenia eventu jest odpowiedzialny 
+ Hangfire (https://www.hangfire.io/). Dashboard po odpaleniu api znajduje się pod https://localhost:5001/hangfire-dashboard ,gdzie
+ możemy podejrzeć nasze taski.
+
+ Logi znajdują się w katalogu Logs/ ,gdzie nowe pliki generują się codziennie (plik per level)
+
+ =======================================================================================================
+ UWAGA!	
+ 
+W projekcie mamy typy wyliczeniowe (enumy), które często trzeba wprowadzić w rządaniach:
+
+1. Miejsce odbycia się eventu
+
+	PlaceType
+    {
+        Outdoors = 1,
+        Local = 2,
+        Magazine = 3,
+        Stadium = 4
+    }
+
+2. Kategoria wydarzenia 
+	
+	EventCategory
+    {
+        Birthday = 1,
+        Massive = 2,
+        Private = 3,
+        Corporate = 4
+    }
+
+3. Typ/Styl w jakim odbędzie się dane wydarzenie
+
+	EventType
+    {
+        OldStyle =1,
+        Modern = 2
+    }
+
+4. Obecny status aplikacji
+	
+	StatusApplication
+    {
+        NotConsidered = 1,
+        InProgress = 2,
+        Rejected = 3,
+        ConsideredPositively = 4
+    }
+
+5. Dla wniosków (zgłoszeń) typ występu jaki dany wykonawca chce przedstawić
+
+	TypePerformance
+    {
+        StandUp = 1,
+        Musical = 2,
+        Acrobatics = 3
+    }
+
+6. Dla statusu eventu
+	
+	EventStatus
+    {
+        Active = 1,
+        Suspended = 2,
+        Cancelled = 3,
+		Realized = 4
+    }
+
+7. Role użytkowników 
+	
+	Roles
+    {
+        User = 1,
+        Performer = 2,
+        Admin = 3,
+        Owner = 4
+    }
+=======================================================================================================
+
+
+ UWAGA !!! 
+
+ Oczywiście przy każdej modyfikacji obiektu event są wysyłane powiadomienia (zamockowane) do poszczególnych userów
+
+
+ =======================================================================================================
+
+Proces tworzenia eventu:
+
+Operacja jest dostępna tylko dla uzytkownuików z rolą "Owner"
+
+	Każdy event musi mieć adres, który składa się z miasta, ulicy, kodu pocztowego oraz numeru ulicy 
+	
+	Walidacja: 
+		- Miasto to ciąg znaków wiekszy niż 3 i mniejszy niz 50
+		- Ulica to ciąg znaków wiekszy niż 3 i mniejszy niz 50
+		- Kod pocztowy to ciąg znaków wiekszy niż 3 i mniejszy niz 50
+		- Ulica to ciąg znaków wiekszy niż 3 i mniejszy niz 10
+		- Numer ulicy to ciąg znaków wiekszy niż 3 i mniejszy niz 10
+	
+	Każdy event ma czas trwania
+		
+	Walidacja:	
+		- StartDate - data rozpoczęcia ma być nie mniejsza niż data teraz + dwa tygodnie
+		- EndDate - data zakończenia nie może być mniejsza niż data rozpoczęcia)
+		
+	Event może mieć opis
+	
+	Walidacja:
+		- Description - jeśli nie jest null to musi mieć minimum 100 znaków, ale w celu testów jest ustawione na 1
+		
+	Każdy event ma nazwe
+		
+	Walidacja:
+		- EventName - Nie możw być puste i musi być wieksze niż 3 i mniejsze niż 50
+	
+	
+
+1. Kowalski tworzy nowy event:
+	
+	przykładowy request:
+
+	{
+		"eventName": "Super event",
+		"eventDescription": "Super event description test",
+		"startDate": "2022-06-15 13:00:00",
+		"endDate": "2022-06-15 19:00:00",
+		"placeType": 1,
+		"recurringEvent": false,
+		"city": "Warszawa",
+		"street": "Mieszka",
+		"numberStreet": "123a",
+		"postalCode": "02-209",
+		"categoryType": 2,
+		"eventType": 2
+	}
+	
+ przy tworzeniu eventu podnosimy zdarzenie, które wysyła informacje mail (mockujemy wysyłanie maila) do wszystkich 
+ wykonawców oraz zarejestrowanych userów o powstaniu nowego eventu
+ 
+ 
+ --------------------------------------------------------------------------------------------------------
+ 
+ 
+ ChangeVisibility:
+
+ W projekcie visibility oznacza aktywność, czyli to jest taki przełącznik między statusem active a suspended
+ 
+ Operacja jest dostępna tylko dla uzytkownuików z rolą "Owner"
+
+
+ Przykładowy request:
+
+	{
+       "eventId": 10
+	}
+
+ Walidacja:
+
+ - Event nie może mieć statusu "canceled"
+ - Jeśli jest mniej niż 14 dni do rozpoczęcia eventu to nie możemy już wycofać obecnego statusu
+   * jeśli zostanie aktywny to zadanie w tle odbedzie sie wraz z zakonczeniem eventu
+   * jeśli zostanie w statusie zawieszony to w chwili, gdy zostanie 13 dni do teoretycznego rozpoczęcia wykona się zadanie 
+	zmieniające status na canceled
+
+
+ --------------------------------------------------------------------------------------------------------
+
+ Odwołanie wydarzenia:
+
+
+ Status canceled ostatni stan życia obiektu -> to jego ostateczna forma której nie mamy możliwosci modyfikować.
+ Możemy widzieć eventy które mają status canceled i możemy dodawać opinie
+
+
+ Walidacja :
+
+ - Event nie może posiadać być już w stanie anulowania
+ - Jeśli mamy status active to nie możemy usunąć jeśli mamy mniej niż 14 dni do rozpoczęcia EVENTU(w każdym innym statusie możemy usuwać)
+
+
+  --------------------------------------------------------------------------------------------------------
+
+  Update eventu:
+
+  przykładowy request:
+
+  {
+  "eventId":19,
+  "eventDescription": "Testowy description ",
+  "startDate": "01-07-2022",
+  "endDate": "02-07-2022",
+  "placeType": 1,
+  "recurringEvent": false,
+  "categoryType": 1,
+  "eventType": 1
+}
+
+ Walidacja:
+
+ -Wszystkie pola nie mogą być null
+ -Daty nie można modyfikować jesli zostało do rozpoczecia mniej niż 14 dni
+ -Update tylko ze statusem active
+
+
+
+
+   --------------------------------------------------------------------------------------------------------
+
+
+   Dodajemy obrazy / usuwamy 
+
+   walidacja:
+
+   Mamy flage na to czy ma dodaawany obraz ma być obrazem głównym
+
+   - nie możemy mieć dwóch obrazów głównych
+   - pierwszy leci defaultowo jak główny
+   - Obrazy nie mogą się powtarzać
+   - Dodawać możemy tylko wtedy gdy mamy status active dla eventu
+
+   //TODO dodać logike na ustawianie najstarszego obrazu jako main (jesli istnieje ofc)
+
+
+
+   
+   --------------------------------------------------------------------------------------------------------
+
+   Propozycje występu:
+
+
+   Kowalski chce, aby dany zespół wystąpił w jego evencie, wiec tworzy propozycje dla niego, która zostaje usunieta automatycznie w chwili 
+   złożenia wniosku lub usuniecia recznego przez wystepujacego lub Kowalskiego (ownera)
+
+   Tworzenie i usuwanie:
+   
+   Możemy mieć tylko jedną propozycje per event dla danego wykonawcy
+
+   Usuwanie: 
+
+   Mamy trigger na ustawianie deleted na 1
+
+
+  --------------------------------------------------------------------------------------------------------
+
+  Wnioski:
+
+  Występujący tworzy wniosek, który może aktualizować w każdej chwili póki jest w statusie NotConsidered (nie rozpatrzony)
+  W momencie jak Kowalski zobaczy dany wniosek to może odrzucić, ale może również dać jakiś feedback co trzeba poprawić 
+  wraz z aktualizacją przez Kowalskiego wniosek przyjmuje status "InProgress". Ja jako występujący widze wniosek, który 
+  ma status InProgress i moge poprawic/ zaakceptować lub odrzucic (działa to w dwie strony) 
+
+  *Endpoint ConsiderEventApplication properta Approved jest odpowiedzialna za zatwierdzenie/odrzucenie (jeden endpoint)
+  --------------------------------------------------------------------------------------------------------
+
