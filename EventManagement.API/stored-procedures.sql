@@ -1,7 +1,3 @@
-USE EventManagement
-GO
-
-
 --Application
 
 CREATE PROCEDURE [dbo].[application_createNewEventApplication_I]
@@ -1060,9 +1056,3 @@ BEGIN
 	COMMIT
 END
 GO
-
-
-----DATA
-
---INSERT INTO Roles VALUES('User'), ('Performer'), 
---						('Admin'), ('Owner')

@@ -8,6 +8,8 @@ WORKDIR $PROJECT_DIR
 ENV SA_PASSWORD=Password_123BD
 ENV ACCEPT_EULA=Y
 COPY create-db.sql ./
+COPY create-tables.sql ./
+COPY create-triggers.sql ./
 COPY stored-procedures.sql ./
 COPY entrypoint.sh ./
 COPY setup.sh ./

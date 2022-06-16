@@ -21,13 +21,13 @@ services:
       SA_PASSWORD: Password_123BD
     ports: 
       - "1440:1433"
-    volumes: 
-      - "sqldata:/var/opt/mssql"
+    #volumes: 
+    #  - "sqldata:/var/opt/mssql"
     networks:
         - em-system-network
 
 networks:
   em-system-network: {}
 
-volumes: 
-  sqldata:
+#volumes: 
+#  sqldata:

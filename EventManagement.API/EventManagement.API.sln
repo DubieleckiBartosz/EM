@@ -14,6 +14,8 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{86EE89F2-C3C2-4080-8B6B-1C35CAC2DF78}"
 	ProjectSection(SolutionItems) = preProject
 		create-db.sql = create-db.sql
+		create-tables.sql = create-tables.sql
+		create-triggers.sql = create-triggers.sql
 		entrypoint.sh = entrypoint.sh
 		setup.sh = setup.sh
 		sql.Dockerfile = sql.Dockerfile
