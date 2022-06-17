@@ -1,6 +1,4 @@
-﻿using System;
-using EventManagement.Application.Helpers;
-using EventManagement.Application.Models.Enums;
+﻿using EventManagement.Application.Models.Enums;
 using EventManagement.Application.Wrappers;
 using MediatR;
 using Newtonsoft.Json;

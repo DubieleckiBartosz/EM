@@ -9,5 +9,12 @@
 																 DELETE FROM ApplicationUsers 
 																 WHERE Email != 'SuperUser@test.com'  
 																 COMMIT TRANSACTION";
-	}
+
+        public const string Delete_Events = @"DELETE FROM Events";
+        public const string Delete_EventApplications_Performers_Events_AppUsers = @"DELETE FROM EventApplications
+                                                                                    DELETE FROM Performers
+                                                                                    DELETE FROM [Events]
+                                                                                    DELETE FROM ApplicationUsers 
+                                                                                    WHERE Email != 'SuperUser@test.com'";
+    }
 }
