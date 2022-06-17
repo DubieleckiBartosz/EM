@@ -93,3 +93,17 @@ do
 done
 
 
+for i in {1..30};
+do
+    /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Password_123BD -d EventManagementTests -i create-test-data.sql
+    if [ $? -eq 0 ]
+    then
+        echo "create-test-data.sql for EventManagementTests completed"
+        break
+    else
+        echo "not ready yet..."
+        sleep 1
+    fi
+done
+
+

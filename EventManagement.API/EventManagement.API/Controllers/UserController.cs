@@ -27,7 +27,7 @@ namespace EventManagement.API.Controllers
         [ProducesResponseType(typeof(Response<UserCurrentIFullInfo>), 200)]
         [SwaggerOperation(Summary = "Get info about current user")]
         [Authorize]
-        [HttpGet]
+        [HttpGet("[action]")]
         public async Task<IActionResult> CurrentUserInfo()
         {
             var refreshToken = Request.Cookies[Constants.CookieRefreshToken];

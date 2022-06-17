@@ -11,6 +11,7 @@ COPY create-db.sql ./
 COPY create-tables.sql ./
 COPY create-triggers.sql ./
 COPY stored-procedures.sql ./
+COPY create-test-data.sql ./
 COPY entrypoint.sh ./
 COPY setup.sh ./
 

@@ -15,6 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "scripts", "scripts", "{86EE
 	ProjectSection(SolutionItems) = preProject
 		create-db.sql = create-db.sql
 		create-tables.sql = create-tables.sql
+		create-test-data.sql = create-test-data.sql
 		create-triggers.sql = create-triggers.sql
 		entrypoint.sh = entrypoint.sh
 		setup.sh = setup.sh
