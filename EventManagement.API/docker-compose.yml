@@ -11,11 +11,22 @@ services:
         - "8000:80"
     networks:
         - em-system-network
+
+  emseq:
+    image: datalust/seq
+    restart: unless-stopped 
+    ports:
+        - 5341:80
+    environment:
+         - ACCEPT_EULA=Y
+    networks:
+        - em-system-network
+
   mssql: 
     build:
         context: .
         dockerfile: sql.Dockerfile
-    restart: unless-stopped
+    restart: always
     environment: 
       ACCEPT_EULA: "Y"
       SA_PASSWORD: Password_123BD
@@ -25,6 +36,8 @@ services:
     #  - "sqldata:/var/opt/mssql"
     networks:
         - em-system-network
+
+
 
 networks:
   em-system-network: {}

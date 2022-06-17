@@ -2,7 +2,6 @@
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
-using EventManagement.Application.Attributes;
 using EventManagement.Application.Contracts;
 using EventManagement.Application.Models.Dto.EventDTOs;
 using EventManagement.Application.Wrappers;
@@ -10,7 +9,6 @@ using MediatR;
 
 namespace EventManagement.Application.Features.EventFeatures.Queries.GetEventDetails
 {
-    [WithTransaction]
     public class GetEventDetailsQueryHandler : IRequestHandler<GetEventDetailsQuery, Response<EventDetailsDto>>
     {
         private readonly IUnitOfWork _unitOfWork;

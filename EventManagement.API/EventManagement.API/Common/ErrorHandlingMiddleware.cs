@@ -14,11 +14,13 @@ namespace EventManagement.API.Common
     {
         private readonly RequestDelegate _next;
         private readonly ILoggerManager<ErrorHandlingMiddleware> _loggerManager;
+        private readonly ITransaction _transaction;
 
-        public ErrorHandlingMiddleware(RequestDelegate next, ILoggerManager<ErrorHandlingMiddleware> loggerManager)
+        public ErrorHandlingMiddleware(RequestDelegate next, ILoggerManager<ErrorHandlingMiddleware> loggerManager, ITransaction transaction)
         {
             this._next = next;
             this._loggerManager = loggerManager;
+            this._transaction = transaction;
         }
 
         public async Task Invoke(HttpContext context)
@@ -46,6 +48,15 @@ namespace EventManagement.API.Common
                     EventManagementException e => e.Code,
                     _ => (int) HttpStatusCode.InternalServerError
                 };
+
+                try
+                {
+                    this._transaction.Rollback();
+                }
+                catch
+                {
+                    // ignored
+                }
 
                 _loggerManager.LogError(ex?.Message);
                 await response.WriteAsJsonAsync(model);
