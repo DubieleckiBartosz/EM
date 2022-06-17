@@ -5,7 +5,7 @@ namespace EventManagement.Application.Wrappers
 {
     public class Response<T>
     {
-        public bool Success { get; }
+        public bool Success { get; private set; }
 
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public string Message { get; set; }
@@ -13,13 +13,12 @@ namespace EventManagement.Application.Wrappers
         [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
         public IEnumerable<string> Errors { get; set; }
 
-        public T Data { get; }
+        public T Data { get; private set; }
 
-        //For middleware
         public Response()
         {
-            this.Success = false;
         }
+
         private Response(T data, bool success, string message, IEnumerable<string> errors)
         {
             this.Data = data;

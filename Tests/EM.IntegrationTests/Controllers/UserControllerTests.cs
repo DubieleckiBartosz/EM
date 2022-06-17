@@ -1,12 +1,12 @@
 ﻿using System.Net;
 using System.Net.Http;
-using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using EM.IntegrationTests.Setup;
+using EM.IntegrationTests.Setup.Constants;
 using EventManagement.API;
 using EventManagement.Application.Models.Authorization;
+using EventManagement.Application.Wrappers;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Newtonsoft.Json;
 using Xunit;
 
 namespace EM.IntegrationTests.Controllers
@@ -34,19 +34,98 @@ namespace EM.IntegrationTests.Controllers
                               this.GetRandomInt(100, 1000).ToString(),
                 Password = "UserTest$123",
                 ConfirmPassword = "UserTest$123"
-            }; 
+            };
             
-            var content = JsonConvert.SerializeObject(userRegisterModelTest);
+            var responseMessage = await this.ClientCall(userRegisterModelTest, HttpMethod.Post, "api/User/Register");
 
-            var request = new HttpRequestMessage(HttpMethod.Post, "api/User/Register");
-            request.Content = new StringContent(content);
-            request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");
+            Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
 
-            var response = await this._client.SendAsync(request);
-
-            Assert.True(response.StatusCode == HttpStatusCode.OK);
-
-            await this._databaseFixture.DeleteData("ApplicationUsers");
+            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
         }
+
+
+        [Fact]
+        public async Task Should_Returns_AuthenticationModel_When_Trying_To_Login()
+        {
+            var userTest = new User()
+            {
+                FirstName = "UserTest_FirstName",
+                LastName = "UserTest_LastName",
+                UserName = "UserTest_UserName",
+                Email = "User@test.com",
+                PhoneNumber = this.GetRandomInt(100, 1000).ToString() + "-" +
+                              this.GetRandomInt(100, 1000).ToString() + "-" +
+                              this.GetRandomInt(100, 1000).ToString()
+            };
+
+            await this._databaseFixture.SetCustomUser(userTest, "Test$123");
+
+            var requestLoginModel = new LoginModel()
+            {
+                Email = $"User@test.com",
+                Password = "Test$123"
+            };
+
+            var responseMessage =  await this.ClientCall(requestLoginModel, HttpMethod.Post, "api/User/Login");
+          
+            var responseData = await this.ReadFromResponse<Response<AuthenticationModel>>(responseMessage);
+
+            Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
+            Assert.NotNull(responseData?.Data);
+            Assert.NotNull(responseData.Data.Token);
+
+            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+        }
+
+
+        [Fact]
+        public async Task Should_Add_User_To_Role()
+        {
+            var request = new UserAddToRoleModel()
+            {
+                Email = "User@test.com",
+                Role = "Performer"
+            };
+
+            var userTest = new User()
+            {
+                FirstName = "UserTest_FirstName",
+                LastName = "UserTest_LastName",
+                UserName = "UserTest_UserName",
+                Email = "User@test.com",
+                PhoneNumber = this.GetRandomInt(100, 1000).ToString() + "-" +
+                              this.GetRandomInt(100, 1000).ToString() + "-" +
+                              this.GetRandomInt(100, 1000).ToString()
+            };
+
+            await this._databaseFixture.SetCustomUser(userTest, "Test$123");
+
+            var responseMessage = await this.ClientCall(request, HttpMethod.Post, "api/User/AddUserToRole");
+
+            Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
+
+            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+        }
+
+        //[Fact]
+        //public async Task test()
+        //{
+      
+        //    var userTest = new User()
+        //    {
+        //        FirstName = "UserTest_FirstName",
+        //        LastName = "UserTest_LastName",
+        //        UserName = "UserTest_UserName",
+        //        Email = "User@test.com",
+        //        PhoneNumber = this.GetRandomInt(100, 1000).ToString() + "-" +
+        //                      this.GetRandomInt(100, 1000).ToString() + "-" +
+        //                      this.GetRandomInt(100, 1000).ToString()
+        //    };
+
+        //    var responseMessage = await this.ClientCall<object>(null, HttpMethod.Get, "api/User/CurrentUserInfo");
+        //    var responseData = await this.ReadFromResponse<Response<AuthenticationModel>>(responseMessage);
+
+        //    Assert.NotNull(responseData?.Data);
+        //}
     }
 }
