@@ -16,7 +16,8 @@ namespace EventManagement.API.Common
         private readonly ILoggerManager<ErrorHandlingMiddleware> _loggerManager;
         private readonly ITransaction _transaction;
 
-        public ErrorHandlingMiddleware(RequestDelegate next, ILoggerManager<ErrorHandlingMiddleware> loggerManager, ITransaction transaction)
+        public ErrorHandlingMiddleware(RequestDelegate next, ILoggerManager<ErrorHandlingMiddleware> loggerManager,
+            ITransaction transaction)
         {
             this._next = next;
             this._loggerManager = loggerManager;

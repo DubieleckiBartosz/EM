@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using EM.IntegrationTests.Setup;
@@ -107,25 +108,42 @@ namespace EM.IntegrationTests.Controllers
             await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
         }
 
-        //[Fact]
-        //public async Task test()
-        //{
-      
-        //    var userTest = new User()
-        //    {
-        //        FirstName = "UserTest_FirstName",
-        //        LastName = "UserTest_LastName",
-        //        UserName = "UserTest_UserName",
-        //        Email = "User@test.com",
-        //        PhoneNumber = this.GetRandomInt(100, 1000).ToString() + "-" +
-        //                      this.GetRandomInt(100, 1000).ToString() + "-" +
-        //                      this.GetRandomInt(100, 1000).ToString()
-        //    };
+        [Fact]
+        public async Task Should_Revoke_Token()
+        {
 
-        //    var responseMessage = await this.ClientCall<object>(null, HttpMethod.Get, "api/User/CurrentUserInfo");
-        //    var responseData = await this.ReadFromResponse<Response<AuthenticationModel>>(responseMessage);
+            var userTest = new User()
+            {
+                FirstName = "UserTest_FirstName",
+                LastName = "UserTest_LastName",
+                UserName = "UserTest_UserName",
+                Email = "User@test.com",
+                PhoneNumber = this.GetRandomInt(100, 1000).ToString() + "-" +
+                              this.GetRandomInt(100, 1000).ToString() + "-" +
+                              this.GetRandomInt(100, 1000).ToString()
+            };
 
-        //    Assert.NotNull(responseData?.Data);
-        //}
+            await this._databaseFixture.SetCustomUser(userTest, "Test$123");
+
+            var requestLoginModel = new LoginModel()
+            {
+                Email = $"User@test.com",
+                Password = "Test$123"
+            };
+
+            var responseLoginMessage = await this.ClientCall(requestLoginModel, HttpMethod.Post, "api/User/Login");
+
+            if (!responseLoginMessage.IsSuccessStatusCode)
+            {
+                throw new ArgumentException("Login failed.");
+            }
+
+            var responseMessage = await this.ClientCall<object>(null, HttpMethod.Get, "api/User/CurrentUserInfo");
+            var responseData = await this.ReadFromResponse<Response<UserCurrentIFullInfo>>(responseMessage);
+
+            Assert.NotNull(responseData?.Data);
+            Assert.Equal(requestLoginModel.Email, responseData.Data.Email);
+            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+        }
     }
 }
