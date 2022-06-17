@@ -36,12 +36,18 @@ namespace EM.IntegrationTests.Controllers
                 Password = "UserTest$123",
                 ConfirmPassword = "UserTest$123"
             };
-            
-            var responseMessage = await this.ClientCall(userRegisterModelTest, HttpMethod.Post, "api/User/Register");
 
-            Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
+            try
+            {
+                var responseMessage =
+                    await this.ClientCall(userRegisterModelTest, HttpMethod.Post, "api/User/Register");
 
-            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+                Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+            }
         }
 
 
@@ -66,16 +72,20 @@ namespace EM.IntegrationTests.Controllers
                 Email = $"User@test.com",
                 Password = "Test$123"
             };
+            try
+            {
+                var responseMessage = await this.ClientCall(requestLoginModel, HttpMethod.Post, "api/User/Login");
 
-            var responseMessage =  await this.ClientCall(requestLoginModel, HttpMethod.Post, "api/User/Login");
-          
-            var responseData = await this.ReadFromResponse<Response<AuthenticationModel>>(responseMessage);
+                var responseData = await this.ReadFromResponse<Response<AuthenticationModel>>(responseMessage);
 
-            Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
-            Assert.NotNull(responseData?.Data);
-            Assert.NotNull(responseData.Data.Token);
-
-            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+                Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
+                Assert.NotNull(responseData?.Data);
+                Assert.NotNull(responseData.Data.Token);
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+            }
         }
 
 
@@ -100,18 +110,21 @@ namespace EM.IntegrationTests.Controllers
             };
 
             await this._databaseFixture.SetCustomUser(userTest, "Test$123");
+            try
+            {
+                var responseMessage = await this.ClientCall(request, HttpMethod.Post, "api/User/AddUserToRole");
 
-            var responseMessage = await this.ClientCall(request, HttpMethod.Post, "api/User/AddUserToRole");
-
-            Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
-
-            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+                Assert.True(responseMessage.StatusCode == HttpStatusCode.OK);
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+            }
         }
 
         [Fact]
         public async Task Should_Revoke_Token()
         {
-
             var userTest = new User()
             {
                 FirstName = "UserTest_FirstName",
@@ -130,20 +143,25 @@ namespace EM.IntegrationTests.Controllers
                 Email = $"User@test.com",
                 Password = "Test$123"
             };
-
-            var responseLoginMessage = await this.ClientCall(requestLoginModel, HttpMethod.Post, "api/User/Login");
-
-            if (!responseLoginMessage.IsSuccessStatusCode)
+            try
             {
-                throw new ArgumentException("Login failed.");
+                var responseLoginMessage = await this.ClientCall(requestLoginModel, HttpMethod.Post, "api/User/Login");
+
+                if (!responseLoginMessage.IsSuccessStatusCode)
+                {
+                    throw new ArgumentException("Login failed.");
+                }
+
+                var responseMessage = await this.ClientCall<object>(null, HttpMethod.Get, "api/User/CurrentUserInfo");
+                var responseData = await this.ReadFromResponse<Response<UserCurrentIFullInfo>>(responseMessage);
+
+                Assert.NotNull(responseData?.Data);
+                Assert.Equal(requestLoginModel.Email, responseData.Data.Email);
             }
-
-            var responseMessage = await this.ClientCall<object>(null, HttpMethod.Get, "api/User/CurrentUserInfo");
-            var responseData = await this.ReadFromResponse<Response<UserCurrentIFullInfo>>(responseMessage);
-
-            Assert.NotNull(responseData?.Data);
-            Assert.Equal(requestLoginModel.Email, responseData.Data.Email);
-            await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+            finally
+            {
+                await this._databaseFixture.DeleteData(constScript: Clear.Delete_Tokens_UserRoles_AppUsers);
+            }
         }
     }
 }

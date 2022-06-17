@@ -1,6 +1,5 @@
 ﻿using EventManagement.Domain.Base.EnumerationClasses;
 using EventManagement.Domain.DDD;
-using EventManagement.Domain.Rules;
 using EventManagement.Domain.Rules.Common;
 using EventManagement.Domain.Rules.EventApplicationRules;
 

@@ -4,8 +4,12 @@ namespace EventManagement.Application.Wrappers
 {
     public class ResponseList<T>
     {
-        public int Count { get; }
+        public int Count { get; private set; }
         public List<T> Data { get; set; }
+
+        public ResponseList()
+        {
+        }
 
         private ResponseList(int count, List<T> data)
         {

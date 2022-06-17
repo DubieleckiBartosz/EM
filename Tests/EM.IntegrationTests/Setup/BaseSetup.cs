@@ -3,6 +3,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AutoFixture;
 using EM.IntegrationTests.Common;
 using EventManagement.API;
 using EventManagement.Application.Settings;
@@ -23,10 +24,12 @@ namespace EM.IntegrationTests.Setup
     public abstract class BaseSetup : IClassFixture<WebApplicationFactory<Startup>>
     {
         protected HttpClient _client;
+        protected Fixture _fixture;
 
         private const string Connection = "Server=host.docker.internal,1440;Database=EventManagementTests;User Id=sa;Password=Password_123BD;";
         protected BaseSetup(WebApplicationFactory<Startup> factory)
         {
+            this._fixture = new Fixture();
             this._client = factory.WithWebHostBuilder(builder =>
             {
                 builder.ConfigureServices(services =>
