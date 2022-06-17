@@ -30,6 +30,7 @@ services:
     environment: 
       ACCEPT_EULA: "Y"
       SA_PASSWORD: Password_123BD
+    user: root
     ports: 
       - "1440:1433"
     #volumes: 
