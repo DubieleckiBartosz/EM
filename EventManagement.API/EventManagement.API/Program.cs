@@ -27,6 +27,7 @@ namespace EventManagement.API
                 )
                 .WriteTo.File($"Logs/{dateTimeNowString}-All.log")
                 .WriteTo.Console()
+                .WriteTo.Seq("http://emseq:5341")
                 .CreateLogger();
 
             try
