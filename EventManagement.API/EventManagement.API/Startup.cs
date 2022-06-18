@@ -11,6 +11,7 @@ using EventManagement.Application.Contracts;
 using EventManagement.Application.Settings;
 using EventManagement.Infrastructure.Configurations;
 using Hangfire;
+using Microsoft.AspNetCore.HttpOverrides;
 
 namespace EventManagement.API
 {
@@ -43,13 +44,13 @@ namespace EventManagement.API
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IServiceProvider serviceProvider)
         {
-            app.UseCors(builder =>
-            {
-                builder
-                    .AllowAnyOrigin()
-                    .AllowAnyMethod()
-                    .AllowAnyHeader();
-            });
+            //var forwardedHeaderOptions = new ForwardedHeadersOptions
+            //{
+            //    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+            //};
+            //forwardedHeaderOptions.KnownNetworks.Clear();
+            //forwardedHeaderOptions.KnownProxies.Clear();
+            //app.UseForwardedHeaders(forwardedHeaderOptions);
 
             if (env.IsDevelopment())
             {
@@ -63,6 +64,14 @@ namespace EventManagement.API
             app.UseHttpsRedirection();
 
             app.UseRouting();
+
+            app.UseCors(builder =>
+            {
+                builder
+                    .AllowAnyOrigin()
+                    .AllowAnyMethod()
+                    .AllowAnyHeader();
+            });
 
             app.UseAuthentication();
             app.UseAuthorization();
