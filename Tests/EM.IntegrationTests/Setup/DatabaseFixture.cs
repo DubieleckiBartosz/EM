@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoFixture;
 using Dapper;
 using EventManagement.Application.Models.Authorization;
+using EventManagement.Application.Models.Dao.EventDAOs;
 using EventManagement.Application.Models.Dao.PerformerDAOs;
 using EventManagement.Application.Models.Enums.Auth;
 using Microsoft.AspNetCore.Identity;
@@ -99,12 +100,12 @@ namespace EM.IntegrationTests.Setup
             return 0;
         }
 
-        public async Task SetEvents()
+        public async Task<List<int>> SetEvents()
         {
             await using var connection = new SqlConnection(Connection);
             await connection.OpenAsync();
             await using var transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted);
-
+            var identifiers = new List<int>();
             try
             {
                 for (var i = 0; i < this.GetRandomInt(5, 10); i++)
@@ -129,6 +130,11 @@ namespace EM.IntegrationTests.Setup
 
                     await connection.ExecuteAsync("event_createNewEvent_I", param,
                         transaction: transaction, commandType: CommandType.StoredProcedure);
+                    var eventId = param.Get<int?>("@newIdentifier");
+                    if (eventId.HasValue)
+                    {
+                        identifiers.Add(eventId.Value);
+                    }
                 }
 
                 transaction.Commit();
@@ -138,6 +144,8 @@ namespace EM.IntegrationTests.Setup
                 transaction.Rollback();
                 throw;
             }
+
+            return identifiers; 
         }
 
         public async Task SetPerformers(List<int> userIds)
@@ -199,12 +207,54 @@ namespace EM.IntegrationTests.Setup
             }
         }
 
+        public async Task SetOpinions(int eventId, int count)
+        {
+            await using var connection = new SqlConnection(Connection);
+            await connection.OpenAsync();
+            await using var transaction = connection.BeginTransaction(IsolationLevel.ReadUncommitted);
+            try
+            {
+                for (var i = 0; i < count; i++)
+                {
+                    var param = new DynamicParameters();
+                    param.Add("@eventId", eventId);
+                    param.Add("@userId", null);
+                    param.Add("@comment", $"Comment test with unique number {this._fixture.Create<string>()}");
+                    param.Add("@stars", this.GetRandomInt(0,5));
+
+                    var result = await connection.ExecuteAsync("opinion_createNewOpinion_I", param,
+                        transaction: transaction, commandType: CommandType.StoredProcedure);
+                }
+
+                transaction.Commit();
+            }
+            catch
+            {
+                transaction.Rollback();
+                throw;
+            }
+        }
+
         public async Task<List<PerformerDao>> GetCurrentTestPerformers()
         {
             await using var connection = new SqlConnection(Connection);
             await connection.OpenAsync();
             return (await connection.QueryAsync<PerformerDao>(
                 "performer_getAllPerformers_S", commandType: CommandType.StoredProcedure))?.ToList();
+        }
+
+        public async Task<EventBaseDao> GetEvent(int eventId)
+        {
+            await using var connection = new SqlConnection(Connection);
+            await connection.OpenAsync();
+
+            var param = new DynamicParameters();
+
+            param.Add("@eventId", eventId);
+
+            var result = (await connection.QueryAsync<EventBaseDao>("event_getEventBaseDataById_S", param,
+                commandType: CommandType.StoredProcedure)).FirstOrDefault();
+            return result;
         }
 
         public async Task<List<int>> UserSeedData()

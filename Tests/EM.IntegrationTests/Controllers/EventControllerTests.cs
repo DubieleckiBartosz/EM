@@ -6,8 +6,12 @@ using AutoFixture;
 using EM.IntegrationTests.Setup;
 using EM.IntegrationTests.Setup.Constants;
 using EventManagement.API;
+using EventManagement.Application.Features.EventFeatures.Commands.CancelEvent;
+using EventManagement.Application.Features.EventFeatures.Commands.ChangeVisibilityEvent;
 using EventManagement.Application.Features.EventFeatures.Commands.CreateEvent;
+using EventManagement.Application.Features.EventFeatures.Commands.UpdateEvent;
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventsBySearch;
+using EventManagement.Application.Features.EventFeatures.Queries.GetEventWithOpinions;
 using EventManagement.Application.Models.Dto.EventDTOs;
 using EventManagement.Application.Models.Enums;
 using EventManagement.Application.Wrappers;
@@ -101,18 +105,134 @@ namespace EM.IntegrationTests.Controllers
         {
             await this._databaseFixture.SetEvents();
 
-            var request = new SearchEventsQuery()
+            var query = new SearchEventsQuery()
             {
                 PageSize = 2
             };
 
             try
             {
-                var responseMessage = await this.ClientCall(request, HttpMethod.Post, "api/Event/GetEvents");
+                var responseMessage = await this.ClientCall(query, HttpMethod.Post, "api/Event/GetEvents");
                 var responseData = await this.ReadFromResponse<ResponseList<EventBaseDto>>(responseMessage);
 
                 Assert.NotNull(responseData?.Data);
                 Assert.Equal(2, responseData.Data.Count);
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData("Events");
+            }
+        }
+
+        [Fact]
+        public async Task Should_Return_Event_Without_Opinions()
+        {
+            var eventId = await this._databaseFixture.SetOnlyOneEvent();
+            var query = new GetEventWithOpinionsQuery(eventId, null);
+            try
+            {
+                var responseMessage = await this.ClientCall(query, HttpMethod.Post, "api/Event/GetEventWithOpinions");
+                var responseData = await this.ReadFromResponse<Response<EventWithOpinionsDto>>(responseMessage);
+
+                Assert.NotNull(responseData?.Data);
+                Assert.Empty(responseData.Data.Opinions);
+                Assert.Equal(eventId, responseData.Data.Id);
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData("Events");
+            }
+        }
+
+
+        [Fact]
+        public async Task Should_Return_Event_With_Opinions()
+        {
+            var count = this.GetRandomInt();
+            var eventId = await this._databaseFixture.SetOnlyOneEvent();
+            await this._databaseFixture.SetOpinions(eventId, count);
+
+            var query = new GetEventWithOpinionsQuery(eventId, null);
+            try
+            {
+                var responseMessage = await this.ClientCall(query, HttpMethod.Post, "api/Event/GetEventWithOpinions");
+                var responseData = await this.ReadFromResponse<Response<EventWithOpinionsDto>>(responseMessage);
+
+                Assert.NotNull(responseData?.Data);
+                Assert.NotEmpty(responseData.Data.Opinions);
+                Assert.Equal(eventId, responseData.Data.Id);
+                Assert.Equal(count, responseData.Data.Opinions.Count);
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData(null, Clear.Delete_Events_Opinions);
+            }
+        }
+
+
+        [Fact]
+        public async Task Should_Change_Visibility()
+        {
+            var eventId = await this._databaseFixture.SetOnlyOneEvent();
+
+            var request = new ChangeVisibilityCommand(eventId);
+            try
+            {
+                var responseMessage = await this.ClientCall(request, HttpMethod.Put, "api/Event/ChangeVisibilityEvent");
+                var responseData = await this.ReadFromResponse<Response<int>>(responseMessage);
+
+                Assert.NotNull(responseData?.Data);
+                Assert.True(responseData?.Success);
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData("Events");
+            }
+        }
+
+
+        [Fact]
+        public async Task Should_Update_Event_Data()
+        {
+            var eventId = await this._databaseFixture.SetOnlyOneEvent();
+            var newDescription = "New_Description_Test_After_Update";
+            var newCategory = EventCategory.Corporate;
+
+            var request = new UpdateEventCommand(eventId, newDescription, categoryType: newCategory);
+
+            try
+            {
+                var responseMessage = await this.ClientCall(request, HttpMethod.Put, "api/Event/UpdateEventInformation");
+                var responseData = await this.ReadFromResponse<Response<string>>(responseMessage);
+
+                Assert.True(responseData?.Success);
+
+                var eventAfterUpdate = await this._databaseFixture.GetEvent(eventId);
+
+                Assert.Equal(newDescription, eventAfterUpdate?.EventDescription);
+                Assert.Equal(newCategory, eventAfterUpdate?.EventCategory);
+
+            }
+            finally
+            {
+                await this._databaseFixture.DeleteData("Events");
+            }
+        }
+
+
+        [Fact]
+        public async Task Should_Cancel_Event()
+        {
+            var eventId = await this._databaseFixture.SetOnlyOneEvent();
+
+            var request = new CancelEventCommand(eventId);
+
+            try
+            {
+                var responseMessage = await this.ClientCall(request, HttpMethod.Put, "api/Event/CancelEvent");
+                var responseData = await this.ReadFromResponse<Response<string>>(responseMessage);
+
+                Assert.True(responseData?.Success);
             }
             finally
             {
