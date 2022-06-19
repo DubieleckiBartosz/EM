@@ -11,7 +11,6 @@ using EventManagement.Application.Contracts;
 using EventManagement.Application.Settings;
 using EventManagement.Infrastructure.Configurations;
 using Hangfire;
-using Microsoft.AspNetCore.HttpOverrides;
 
 namespace EventManagement.API
 {
