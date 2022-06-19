@@ -32,7 +32,7 @@ namespace EventManagement.API
             services.GetHangfire(Configuration);
             services.GetMediatR();
             services.GetMapper();
-            services.GetFluentValidatio n();
+            services.GetFluentValidation();
             services.GetApplicationDependencyInjection();
             services.GetInfrastructureDependencyInjection();
             services.GetJwtBearer(this.Configuration);
