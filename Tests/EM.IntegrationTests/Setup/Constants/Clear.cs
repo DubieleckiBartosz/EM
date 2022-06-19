@@ -16,5 +16,8 @@
                                                                                     DELETE FROM [Events]
                                                                                     DELETE FROM ApplicationUsers 
                                                                                     WHERE Email != 'SuperUser@test.com'";
+
+        public const string Delete_Events_Opinions = @"DELETE FROM Opinions 
+                                                       DELETE [Events]";
     }
 }

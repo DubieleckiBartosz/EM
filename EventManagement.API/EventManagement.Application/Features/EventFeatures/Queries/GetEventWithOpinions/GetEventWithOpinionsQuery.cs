@@ -1,5 +1,4 @@
 ﻿using EventManagement.Application.Features.Search;
-using EventManagement.Application.Models.Dto;
 using EventManagement.Application.Models.Dto.EventDTOs;
 using EventManagement.Application.Wrappers;
 using MediatR;
