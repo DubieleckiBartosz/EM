@@ -29,7 +29,7 @@ namespace EM.IntegrationTests.Setup
             this._passwordHasher = new PasswordHasher<User>();
         }
 
-        public async Task SetCustomUser(User user, string password)
+        public async Task<int> SetCustomUser(User user, string password)
         {
             user.PasswordHash = this._passwordHasher.HashPassword(user, password);
             var param = this.GetUserParameters(user);
@@ -58,6 +58,7 @@ namespace EM.IntegrationTests.Setup
                     transaction: transaction);
 
                 transaction.Commit();
+                return identifier ?? 0;
             }
             catch
             {
@@ -175,6 +176,42 @@ namespace EM.IntegrationTests.Setup
                 transaction.Rollback();
                 throw;
             }
+        }
+
+        public async Task SetPerformer(int userId)
+        {
+            await using var connection = new SqlConnection(Connection);
+            await connection.OpenAsync();
+
+            var param = new DynamicParameters();
+
+            param.Add("@userId", userId);
+            param.Add("@performerName", $"Performer_Test_Name");
+            param.Add("@vip", this._fixture.Create<bool>());
+            param.Add("@performerMail", $"Performer@testPerformer.com");
+            param.Add("@numberOfPeople", this.GetRandomInt(1, 5));
+
+            await connection.ExecuteAsync("performer_createNewPerformer_I", param,
+                commandType: CommandType.StoredProcedure);
+        
+        }
+
+        public async Task SetEventApplication(int eventId, int performerId)
+        {
+            await using var connection = new SqlConnection(Connection);
+            await connection.OpenAsync();
+
+
+            var param = new DynamicParameters();
+            param.Add("@eventId", eventId);
+            param.Add("@performerId", performerId);
+            param.Add("@performerName", $"Performer_Test_Name");
+            param.Add("@typePerformance", this.GetRandomInt(1, 3));
+            param.Add("@durationInMinutes", this.GetRandomInt(20, 50));
+            param.Add("@currentStatus", 1);
+
+            await connection.ExecuteAsync("application_createNewEventApplication_I", param,
+                commandType: CommandType.StoredProcedure);
         }
 
         public async Task SetEventApplications(int eventId, List<int> performerIds)
