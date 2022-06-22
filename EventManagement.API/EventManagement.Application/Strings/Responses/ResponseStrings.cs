@@ -11,7 +11,7 @@ namespace EventManagement.Application.Strings.Responses
         public const string DataNotFound = "Data not found.";
         public const string OperationFailed = "Operation failed.";
         public const string EventCannotBeNull = "Event cannot be null.";
-        public static string InvalidType (string value) => $"{value} - invalid type.";
+        public static string InvalidType (string value) => $"{value ?? "NULL"} - invalid type.";
 
         //Event
         public const string EventCreated = "A new event has been created.";
@@ -50,6 +50,7 @@ namespace EventManagement.Application.Strings.Responses
 
         //Proposal exceptions
         public const string OldDateForProposal = "The date cannot be older than the beginning of the event.";
+        public const string RemoveProposalsFailed = "Proposals could not be removed.";
 
         //Authorization
         public static string UserExist(string email) => $"Email {email} is already registered.";

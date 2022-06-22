@@ -74,7 +74,22 @@ namespace EventManagement.Infrastructure.Repositories
                 throw new ArgumentNullException(ResponseStrings.OperationFailed);
             }
         }
-        
+
+        public async Task RemoveAllProposals(int eventId)
+        {
+            var param = new DynamicParameters();
+
+            param.Add("@eventId", eventId);
+
+            var result = await this.ExecuteAsync("proposal_removeProposals_D", param, this.Transaction,
+                commandType: CommandType.StoredProcedure);
+
+            if (result <= 0)
+            {
+                throw new ArgumentNullException(ResponseStrings.RemoveProposalsFailed);
+            }
+        }
+
         public async Task RemoveExpiredProposalsAsync()
         {
             await this.ExecuteAsync("proposal_removeExpiredProposals_D", transaction: this.Transaction,

@@ -921,6 +921,14 @@ BEGIN
 END
 GO
 
+CREATE PROCEDURE proposal_removeProposals_D
+	@eventId INT
+AS
+BEGIN
+	DELETE FROM PerformanceProposals
+	WHERE EventId = @eventId
+END
+GO
 
   CREATE PROCEDURE [dbo].[user_clearRevokedTokens_D]
   AS
