@@ -19,14 +19,19 @@ namespace EventManagement.Application.Features.NotificationHandlers
         private readonly IEventApplicationRepository _applicationRepository;
         private readonly IMapper _mapper;
         private readonly ILoggerManager<EventCanceledEventHandler> _loggerManager;
+        private readonly IPerformanceProposalRepository _performanceProposalRepository;
 
         public EventCanceledEventHandler(IEventApplicationRepository applicationRepository, IMapper mapper,
-            ILoggerManager<EventCanceledEventHandler> loggerManager)
+            ILoggerManager<EventCanceledEventHandler> loggerManager,
+            IPerformanceProposalRepository performanceProposalRepository)
         {
             this._applicationRepository =
                 applicationRepository ?? throw new ArgumentNullException(nameof(applicationRepository));
             this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this._loggerManager = loggerManager ?? throw new ArgumentNullException(nameof(loggerManager));
+            this._performanceProposalRepository = performanceProposalRepository ??
+                                                  throw new ArgumentNullException(
+                                                      nameof(performanceProposalRepository));
         }
 
         public async Task Handle(DomainNotification<EventCanceled> notification, CancellationToken cancellationToken)
@@ -44,7 +49,6 @@ namespace EventManagement.Application.Features.NotificationHandlers
             {
                 return;
             }
-
 
             foreach (var item in result)
             {
@@ -64,6 +68,9 @@ namespace EventManagement.Application.Features.NotificationHandlers
                     MailMessage = message
                 });
             }
+
+            await this._performanceProposalRepository.RemoveAllProposals(domainEvent.EventId);
+            this._loggerManager.LogInformation(null, $"Event proposals have been removed.");
         }
     }
 }

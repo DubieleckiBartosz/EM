@@ -12,5 +12,6 @@ namespace EventManagement.Application.Contracts.Repositories
         Task CreateProposalAsync(PerformanceProposal proposal);
         Task RemoveProposalAsync(int proposalId);
         Task RemoveExpiredProposalsAsync();
+        Task RemoveAllProposals(int eventId);
     }
 }
