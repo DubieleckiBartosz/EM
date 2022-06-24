@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using EventManagement.Application.Contracts;
 using EventManagement.Application.Features.Search;
 using EventManagement.Application.Models.Dto.EventDTOs;
+using EventManagement.Application.Strings;
 using EventManagement.Application.Wrappers;
 using MediatR;
 
@@ -15,16 +17,46 @@ namespace EventManagement.Application.Features.EventFeatures.Queries.GetEventsBy
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
+        private readonly ICacheService _cacheService;
 
-        public SearchEventsQueryHandler(IUnitOfWork unitOfWork, IMapper mapper)
+        public SearchEventsQueryHandler(IUnitOfWork unitOfWork, IMapper mapper, ICacheService cacheService)
         {
             this._unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
+            this._cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 
         public async Task<ResponseList<EventBaseDto>> Handle(SearchEventsQuery request,
             CancellationToken cancellationToken)
         {
+            var fromCache = request == null;
+            if (!fromCache)
+            {
+                var propertyInfos = request.GetType().GetProperties();
+                foreach (var prop in propertyInfos)
+                {
+                    if (prop.Name is nameof(BaseSearchQuery.PageSize) or nameof(BaseSearchQuery.PageNumber))
+                    {
+                        continue;
+                    }
+
+                    fromCache = prop.GetValue(request, null) == default;
+                    if (!fromCache)
+                    {
+                        break;
+                    }
+                }
+            }
+
+            if (fromCache)
+            {
+                var resultFromCache = await this.GetFromCache();
+                if (resultFromCache != null)
+                {
+                    return resultFromCache;
+                }
+            }
+
             request ??= new SearchEventsQuery();
 
             if (request?.SortModel == null)
@@ -57,7 +89,25 @@ namespace EventManagement.Application.Features.EventFeatures.Queries.GetEventsBy
             var count = result[0].Count;
             var resultMap = this._mapper.Map<List<EventBaseDto>>(result);
 
-            return ResponseList<EventBaseDto>.Ok(count, resultMap);
+            var response = ResponseList<EventBaseDto>.Ok(count, resultMap);
+
+            if (fromCache)
+            {
+                await this._cacheService.SetAsync(CacheKeys.EventsKey, response);
+            }
+
+            return response;
+        }
+
+        private async Task<ResponseList<EventBaseDto>> GetFromCache()
+        {
+            var result = await this._cacheService.GetAsync<ResponseList<EventBaseDto>>(CacheKeys.EventsKey);
+            if (result != null && result.Data?.Any() == true)
+            {
+                return result;
+            }
+
+            return null;
         }
     }
 }

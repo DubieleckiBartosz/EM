@@ -6,6 +6,7 @@ using EventManagement.Application.Attributes;
 using EventManagement.Application.Contracts;
 using EventManagement.Application.Features.EventFeatures.Commands.MarkAsRealizedEvent;
 using EventManagement.Application.Helpers;
+using EventManagement.Application.Strings;
 using EventManagement.Application.Strings.Responses;
 using EventManagement.Application.Wrappers;
 using EventManagement.Domain.Base.EnumerationClasses;
@@ -21,12 +22,15 @@ namespace EventManagement.Application.Features.EventFeatures.Commands.UpdateEven
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly IBackgroundService _backgroundService;
+        private readonly ICacheService _cacheService;
 
-        public UpdateEventCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IBackgroundService backgroundService)
+        public UpdateEventCommandHandler(IUnitOfWork unitOfWork, IMapper mapper, IBackgroundService backgroundService,
+            ICacheService cacheService)
         {
             this._unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this._backgroundService = backgroundService ?? throw new ArgumentNullException(nameof(backgroundService));
+            this._cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 
         public async Task<Response<string>> Handle(UpdateEventCommand request, CancellationToken cancellationToken)
@@ -57,6 +61,8 @@ namespace EventManagement.Application.Features.EventFeatures.Commands.UpdateEven
             aggregate.Update(time, recurring, description, place, category, eventType);
             await eventRepository.UpdateAsync(aggregate);
 
+            await this._cacheService.RemoveByKey(CacheKeys.EventsKey);
+
             await this._unitOfWork.CompleteAsync(aggregate);
 
             if (startDate == null || endTime == null)
@@ -69,7 +75,7 @@ namespace EventManagement.Application.Features.EventFeatures.Commands.UpdateEven
             this._backgroundService.DeleteChangeStatusToRealizedScheduleJob(aggregate.Id);
             this._backgroundService.ChangeStatusToRealizedScheduleJob(new MarkAsRealizedCommand(aggregate.Id),
                 setupBackgroundJobTime);
-
+            
             return Response<string>.Ok(ResponseStrings.EventUpdated);
         }
     }

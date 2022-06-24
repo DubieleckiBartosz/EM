@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using EventManagement.Application.Contracts;
+using EventManagement.Application.Strings;
 using EventManagement.Domain.Base.EnumerationClasses;
 using EventManagement.Domain.Entities;
 using MediatR;
@@ -14,13 +15,15 @@ namespace EventManagement.Application.Features.EventFeatures.Commands.MarkAsReal
         private readonly IUnitOfWork _unitOfWork;
         private readonly IMapper _mapper;
         private readonly ILoggerManager<MarkAsRealizedCommandHandler> _loggerManager;
+        private readonly ICacheService _cacheService;
 
         public MarkAsRealizedCommandHandler(IUnitOfWork unitOfWork, IMapper mapper,
-            ILoggerManager<MarkAsRealizedCommandHandler> loggerManager)
+            ILoggerManager<MarkAsRealizedCommandHandler> loggerManager, ICacheService cacheService)
         {
             this._unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this._mapper = mapper ?? throw new ArgumentNullException(nameof(mapper));
             this._loggerManager = loggerManager ?? throw new ArgumentNullException(nameof(loggerManager));
+            this._cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 
         public async Task<Unit> Handle(MarkAsRealizedCommand request, CancellationToken cancellationToken)
@@ -46,6 +49,8 @@ namespace EventManagement.Application.Features.EventFeatures.Commands.MarkAsReal
             await eventRepository.UpdateAsync(eventAggregate);
 
             this._loggerManager.LogInformation(null, $"Event {request.EventId} status has been changed to realized.");
+
+            await this._cacheService.RemoveByKey(CacheKeys.EventsKey);
 
             return Unit.Value;
         }

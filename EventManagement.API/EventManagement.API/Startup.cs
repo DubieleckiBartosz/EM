@@ -6,10 +6,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using EventManagement.Application.Configurations;
 using EventManagement.Application.Contracts;
-using EventManagement.Application.Settings;
-using EventManagement.Infrastructure.Configurations;
 using Hangfire;
 
 namespace EventManagement.API
@@ -26,16 +23,7 @@ namespace EventManagement.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddHttpContextAccessor();
-            services.Configure<JWTSettings>(Configuration.GetSection("JWTSettings"));
-            services.Configure<ConnectionStrings>(Configuration.GetSection("ConnectionStrings"));
-            services.GetHangfire(Configuration);
-            services.GetMediatR();
-            services.GetMapper();
-            services.GetFluentValidation();
-            services.GetApplicationDependencyInjection();
-            services.GetInfrastructureDependencyInjection();
-            services.GetJwtBearer(this.Configuration);
+            services.GetLayersConfig(this.Configuration);
             services.AddControllers();
             services.GetSwaggerConfig();
         }

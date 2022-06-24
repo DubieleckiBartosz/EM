@@ -12,6 +12,7 @@ namespace EventManagement.Application.Configurations
     {
         public static IServiceCollection GetApplicationDependencyInjection(this IServiceCollection services)
         {
+            services.AddSingleton<ICacheService, CacheService>();
             services.AddTransient(typeof(ILoggerManager<>), typeof(LoggerManager<>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehaviour<,>));
             services.AddTransient(typeof(IPipelineBehavior<,>), typeof(TransactionBehavior<,>));

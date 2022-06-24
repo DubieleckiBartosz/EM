@@ -5,6 +5,7 @@ using EventManagement.Application.Attributes;
 using EventManagement.Application.Contracts;
 using EventManagement.Application.Features.EventFeatures.Commands.MarkAsRealizedEvent;
 using EventManagement.Application.Helpers;
+using EventManagement.Application.Strings;
 using EventManagement.Application.Strings.Responses;
 using EventManagement.Application.Wrappers;
 using EventManagement.Domain.Base.EnumerationClasses;
@@ -19,11 +20,13 @@ namespace EventManagement.Application.Features.EventFeatures.Commands.CreateEven
     {
         private readonly IUnitOfWork _unitOfWork;
         private readonly IBackgroundService _backgroundService;
+        private readonly ICacheService _cacheService;
 
-        public CreateEventCommandHandler(IUnitOfWork unitOfWork, IBackgroundService backgroundService)
+        public CreateEventCommandHandler(IUnitOfWork unitOfWork, IBackgroundService backgroundService, ICacheService cacheService)
         {
             this._unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
             this._backgroundService = backgroundService ?? throw new ArgumentNullException(nameof(backgroundService));
+            this._cacheService = cacheService ?? throw new ArgumentNullException(nameof(cacheService));
         }
 
         public async Task<Response<int>> Handle(CreateEventCommand request, CancellationToken cancellationToken)
@@ -47,12 +50,15 @@ namespace EventManagement.Application.Features.EventFeatures.Commands.CreateEven
 
             var eventRepository = this._unitOfWork.EventRepository;
             var eventIdentifier = await eventRepository.CreateEventAsync(newEvent);
-            await this._unitOfWork.CompleteAsync(newEvent);
 
             var setupBackgroundJobTime = (newEvent.EventTime.EndDate - DateTime.Now).Minutes;
 
             this._backgroundService.ChangeStatusToRealizedScheduleJob(new MarkAsRealizedCommand(eventIdentifier),
                 TimeSpan.FromMinutes(setupBackgroundJobTime));
+
+            await this._cacheService.RemoveByKey(CacheKeys.EventsKey);
+
+            await this._unitOfWork.CompleteAsync(newEvent);
 
             return Response<int>.Ok(eventIdentifier, ResponseStrings.EventCreated);
         }
