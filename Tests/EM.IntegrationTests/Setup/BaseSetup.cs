@@ -41,12 +41,17 @@ namespace EM.IntegrationTests.Setup
                     {
                         opts.DefaultConnection = Connection;
                     });
+         
+                    //services.Configure<RedisConnection>(opts =>
+                    //{
+                    //    opts.Enabled = false;
+                    //});
 
                     services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
                     services.AddMvc(_ => _.Filters.Add(new FakeUserActionFilter()));
                 });
-              
 
+           
             }).CreateClient();
         }
 

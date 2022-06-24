@@ -6,7 +6,8 @@ services:
     build:
       context: .
       dockerfile: EventManagement.API/Dockerfile
-    depends_on: [ mssql ]
+    depends_on: 
+        - mssql
     ports:
         - "8000:80"
         - "8001:443"
@@ -30,6 +31,15 @@ services:
          - ACCEPT_EULA=Y
     networks:
         - em-system-network
+  
+  emredis:
+     image: redis
+     ports:
+        - "6380:6379" 
+     networks:
+        - em-system-network
+     #volumes:
+     #  - redisdata:/data
 
   mssql: 
     build:
@@ -54,3 +64,4 @@ networks:
 
 #volumes: 
 #  sqldata:
+#  redisdata:
