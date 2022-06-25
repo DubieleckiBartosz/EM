@@ -204,18 +204,10 @@ IF NOT EXISTS (SELECT * FROM sysobjects WHERE name='UserRoles' and xtype='U')
 BEGIN
 		CREATE TABLE [dbo].[UserRoles]
 		(
-			Id INT PRIMARY KEY IDENTITY(1,1) NOT NULL,
-			UserId INT NOT NULL,
-			RoleId INT NOT NULL,
+			UserId INT NOT NULL FOREIGN KEY REFERENCES ApplicationUsers(Id) ON DELETE CASCADE,
+			RoleId INT NOT NULL FOREIGN KEY REFERENCES Roles(Id) ON DELETE CASCADE,
+		    CONSTRAINT PK_Users_Roles PRIMARY KEY(UserId, RoleId)
 		)
-		
-		ALTER TABLE [dbo].[UserRoles] ADD  CONSTRAINT [FK_ApplicationUsers_UserRoles] FOREIGN KEY([UserId])
-		REFERENCES [dbo].[ApplicationUsers] ([Id])
-		ON DELETE CASCADE
-		
-		ALTER TABLE [dbo].[UserRoles] ADD  CONSTRAINT [FK_UserRoles_Roles] FOREIGN KEY([RoleId])
-		REFERENCES [dbo].[Roles] ([Id])
-		ON DELETE CASCADE
 END
 
 
