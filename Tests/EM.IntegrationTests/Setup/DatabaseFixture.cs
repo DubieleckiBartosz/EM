@@ -9,6 +9,7 @@ using Dapper;
 using EventManagement.Application.Models.Authorization;
 using EventManagement.Application.Models.Dao.EventDAOs;
 using EventManagement.Application.Models.Dao.PerformerDAOs;
+using EventManagement.Application.Models.Dao.ProposalDAOs;
 using EventManagement.Application.Models.Enums.Auth;
 using Microsoft.AspNetCore.Identity;
 
@@ -292,6 +293,29 @@ namespace EM.IntegrationTests.Setup
             var result = (await connection.QueryAsync<EventBaseDao>("event_getEventBaseDataById_S", param,
                 commandType: CommandType.StoredProcedure)).FirstOrDefault();
             return result;
+        }
+
+        public async Task<int> SetProposal(int eventId, int performerId,string message = null)
+        {
+            await using var connection = new SqlConnection(Connection);
+            await connection.OpenAsync();
+
+            var script = @"INSERT INTO PerformanceProposals (PerformerId, EventId, [Message], ActiveTo)
+	                       VALUES (@performerId, @eventId, @message, @activeTo)
+                          
+	                       SELECT CAST(SCOPE_IDENTITY() AS INT)";
+
+
+            var param = new DynamicParameters();
+
+            param.Add("@performerId", performerId);
+            param.Add("@message", message ?? this._fixture.Create<string>());
+            param.Add("@activeTo", DateTime.Now.AddDays(2));
+            param.Add("@eventId", eventId);
+
+            var result = await connection.QueryAsync<int>(script, param);
+
+            return result.Single();
         }
 
         public async Task<List<int>> UserSeedData()
