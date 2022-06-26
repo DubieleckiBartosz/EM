@@ -19,5 +19,13 @@
 
         public const string Delete_Events_Opinions = @"DELETE FROM Opinions 
                                                        DELETE [Events]";
+
+        public const string Delete_PerformanceProposals_Performers_Events_ApplicationUsers = @"DELETE FROM PerformanceProposals 
+                                                                                               DELETE FROM Performers 
+                                                                                               DELETE FROM [Events] 
+                                                                                               DELETE FROM UserRoles 
+																                               WHERE UserId != 1 
+                                                                                               DELETE FROM ApplicationUsers 
+                                                                                               WHERE Email != 'SuperUser@test.com'";
     }
 }
