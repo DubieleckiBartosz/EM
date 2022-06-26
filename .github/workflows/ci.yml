@@ -29,7 +29,9 @@ jobs:
           cd EventManagement.API/
           docker build -t emmsqltest -f sql.Dockerfile .
       - name: up container
-        run: docker run emmsqltest -d
+        run: |
+          cd EventManagement.API/
+          docker run emmsqltest -d
       - name: Integration test
         run: dotnet test Tests/EM.IntegrationTests/
    
