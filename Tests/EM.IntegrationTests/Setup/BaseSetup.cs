@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -22,36 +23,36 @@ namespace EM.IntegrationTests.Setup
 {
     public abstract class BaseSetup : IClassFixture<WebApplicationFactory<Startup>>
     {
+        private const string CombinePath = "appsettings.json";
         protected HttpClient _client;
         protected Fixture _fixture;
 
-        private const string Connection = "Server=host.docker.internal,1440;Database=EventManagementTests;User Id=sa;Password=Password_123BD;";
+        //private const string Connection = "Server=host.docker.internal,1440;Database=EventManagementTests;User Id=sa;Password=Password_123BD;";
         protected BaseSetup(WebApplicationFactory<Startup> factory)
         {
             this._fixture = new Fixture();
             this._client = factory.WithWebHostBuilder(builder =>
             {
+                builder.ConfigureAppConfiguration((context, conf) =>
+                {
+                    var projectDir = Directory.GetCurrentDirectory();
+                    var configPath = Path.Combine(projectDir, CombinePath);
+                    conf.AddJsonFile(configPath);
+                });
                 builder.ConfigureServices(services =>
                 {
                     var storage = services.SingleOrDefault(service => service.ServiceType == typeof(SqlServerStorage));
                     services.Remove(storage);
                     services.AddHangfire(c => c.UseMemoryStorage());
 
-                    services.Configure<ConnectionStrings>(opts =>
-                    {
-                        opts.DefaultConnection = Connection;
-                    });
-         
-                    //services.Configure<RedisConnection>(opts =>
+                    //services.Configure<ConnectionStrings>(opts =>
                     //{
-                    //    opts.Enabled = false;
+                    //    opts.DefaultConnection = Connection;
                     //});
 
                     services.AddSingleton<IPolicyEvaluator, FakePolicyEvaluator>();
                     services.AddMvc(_ => _.Filters.Add(new FakeUserActionFilter()));
                 });
-
-           
             }).CreateClient();
         }
 
@@ -65,15 +66,16 @@ namespace EM.IntegrationTests.Setup
 
         protected int GetRandomInt(int a = 1, int b = 10) => new Random().Next(a, b);
 
-        protected void SetupConnectionDb()
-        {
-            var configurationSectionMock = new Mock<IConfigurationSection>();
-            configurationSectionMock
-                .SetupGet(_ => _[It.Is<string>(s => s == "DefaultConnection")])
-                .Returns(Connection);
-        }
+        //protected void SetupConnectionDb()
+        //{
+        //    var configurationSectionMock = new Mock<IConfigurationSection>();
+        //    configurationSectionMock
+        //        .SetupGet(_ => _[It.Is<string>(s => s == "DefaultConnection")])
+        //        .Returns(Connection);
+        //}
 
-        protected async Task<HttpResponseMessage> ClientCall<TRequest>(TRequest obj, HttpMethod methodType, string requestUri)
+        protected async Task<HttpResponseMessage> ClientCall<TRequest>(TRequest obj, HttpMethod methodType,
+            string requestUri)
         {
             var request = new HttpRequestMessage(methodType, requestUri);
             if (obj != null)
