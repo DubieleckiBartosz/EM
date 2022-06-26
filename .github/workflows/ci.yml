@@ -24,5 +24,11 @@ jobs:
         run: dotnet build EventManagement.API/EventManagement.API.sln --no-restore
       - name: Test
         run: dotnet test Tests/Application.UnitTests/
+      - name: Build the Docker image
+        run: docker-compose build EventManagement.API/
+      - name: up mssql container
+        run: docker-compose up -d EventManagement.API/
+      - name: Integration test
+        run: dotnet test Tests/EM.IntegrationTests/
    
         
