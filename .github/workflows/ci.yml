@@ -25,9 +25,9 @@ jobs:
       - name: Test
         run: dotnet test Tests/Application.UnitTests/
       - name: Build the Docker image
-        run: docker-compose -f EventManagement.API/sql.Dockerfile build 
+        run: docker build -t emmsqltest -f EventManagement.API/sql.Dockerfile  
       - name: up container
-        run: docker-compose -f EventManagement.API/sql.Dockerfile up -d
+        run: docker run emmsqltest -d
       - name: Integration test
         run: dotnet test Tests/EM.IntegrationTests/
    
