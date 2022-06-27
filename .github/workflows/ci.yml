@@ -30,7 +30,7 @@ jobs:
           docker build -t emmsqltest -f sql.Dockerfile .
       - name: up container
         run: |
-          docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Password_123BD" -p 1440:1433 -u root -h emmsqltest -d emmsqltest
+          docker run -e "ACCEPT_EULA=Y" -e "SA_PASSWORD=Password_123BD" -p 1440:1433 -u root --network=host -d emmsqltest
       - name: Integration test
         run: dotnet test Tests/EM.IntegrationTests/
    
