@@ -24,10 +24,6 @@ jobs:
         run: dotnet build EventManagement.API/EventManagement.API.sln --no-restore
       - name: Test
         run: dotnet test Tests/Application.UnitTests/
-      - name: Install a SQL Server suite of tools
-        uses: potatoqualitee/mssqlsuite@v1.5.1
-        with:
-          install: sqlengine, sqlclient, sqlpackage, localdb
       - name: Build the Docker image
         run: |
           cd EventManagement.API/
