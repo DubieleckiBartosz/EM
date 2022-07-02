@@ -9,7 +9,6 @@ using Dapper;
 using EventManagement.Application.Models.Authorization;
 using EventManagement.Application.Models.Dao.EventDAOs;
 using EventManagement.Application.Models.Dao.PerformerDAOs;
-using EventManagement.Application.Models.Dao.ProposalDAOs;
 using EventManagement.Application.Models.Enums.Auth;
 using Microsoft.AspNetCore.Identity;
 

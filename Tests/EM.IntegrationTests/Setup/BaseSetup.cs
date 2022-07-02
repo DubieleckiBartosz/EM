@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Authorization.Policy;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Moq;
 using Newtonsoft.Json;
 using Xunit;
 using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
@@ -65,14 +64,6 @@ namespace EM.IntegrationTests.Setup
         };
 
         protected int GetRandomInt(int a = 1, int b = 10) => new Random().Next(a, b);
-
-        //protected void SetupConnectionDb()
-        //{
-        //    var configurationSectionMock = new Mock<IConfigurationSection>();
-        //    configurationSectionMock
-        //        .SetupGet(_ => _[It.Is<string>(s => s == "DefaultConnection")])
-        //        .Returns(Connection);
-        //}
 
         protected async Task<HttpResponseMessage> ClientCall<TRequest>(TRequest obj, HttpMethod methodType,
             string requestUri)

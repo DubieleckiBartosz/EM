@@ -16,6 +16,6 @@ namespace EventManagement.Domain.Rules.EventRules
             return this._status == EventCurrentStatus.Cancelled;
         }
 
-        public string ErrorMessage => "Event is in canceled status.";
+        public string ErrorMessage => RuleErrorMessage.EventCannotBeCanceledRuleMessage;
     }
 }

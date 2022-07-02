@@ -25,6 +25,6 @@ namespace EventManagement.Domain.Rules.EventRules
             return false;
         }
 
-        public string ErrorMessage => "No time for modifications.";
+        public string ErrorMessage => RuleErrorMessage.TimeAllowsModificationRuleMessage;
     }
 }
