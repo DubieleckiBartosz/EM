@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using EventManagement.Application.Features.EventFeatures.Commands.CancelEvent;
 using EventManagement.Application.Features.EventFeatures.Commands.ChangeVisibilityEvent;
 using EventManagement.Application.Features.EventFeatures.Commands.CreateEvent;
@@ -7,7 +8,9 @@ using EventManagement.Application.Features.EventFeatures.Queries.GetEventDetails
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventsBySearch;
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventWithApplications;
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventWithOpinions;
+using EventManagement.Application.Helpers;
 using EventManagement.Application.Models.Dto.EventDTOs;
+using EventManagement.Application.Models.Enums;
 using EventManagement.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,6 +23,7 @@ namespace EventManagement.API.Controllers
     [ApiController]
     public class EventController : BaseController
     {
+
         [ProducesResponseType(typeof(Response<string>), 400)]
         [ProducesResponseType(typeof(Response<EventDetailsDto>), 200)]
         [SwaggerOperation(Summary = "Get event by identifier")]
@@ -103,6 +107,17 @@ namespace EventManagement.API.Controllers
         public async Task<IActionResult> CancelEvent([FromBody] CancelEventCommand command)
         {
             return Ok(await this.Mediator.Send(command));
+        }
+
+        [ProducesResponseType(typeof(Response<List<string>>), 200)]
+        [SwaggerOperation(Summary = "Get list of categories")]
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public IActionResult GetCategories()
+        {
+            var response = EnumHelpers.GetStringValuesFromEnum<EventCategory>();
+
+            return Ok(Response<List<string>>.Ok(response));
         }
     }
 }
