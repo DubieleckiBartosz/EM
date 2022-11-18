@@ -104,5 +104,27 @@ namespace EventManagement.API.Controllers
         {
             return Ok(await this.Mediator.Send(command));
         }
+
+        [ProducesResponseType(typeof(Response<List<string>>), 200)]
+        [SwaggerOperation(Summary = "Get list of categories")]
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public IActionResult GetCategories()
+        {
+            var response = EnumHelpers.GetStringValuesFromEnum<EventCategory>();
+
+            return Ok(Response<List<string>>.Ok(response));
+        }
+
+        [ProducesResponseType(typeof(Response<List<List<string>>>), 200)]
+        [SwaggerOperation(Summary = "Get search options")]
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public IActionResult GetSearchOptions()
+        {
+             var categories = EnumHelpers.GetStringValuesFromEnum<EventCategory>();
+
+            return Ok(Response<List<string>>.Ok(response));
+        }
     }
 }
