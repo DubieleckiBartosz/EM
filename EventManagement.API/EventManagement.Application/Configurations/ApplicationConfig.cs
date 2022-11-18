@@ -76,14 +76,20 @@ namespace EventManagement.Application.Configurations
                     {
                         OnChallenge = async (context) =>
                         {
-
                             if (context.AuthenticateFailure != null)
                             {
-                                var error = string.IsNullOrEmpty(context.ErrorDescription) ? context.AuthenticateFailure?.Message : context.ErrorDescription;
+                                var error = string.IsNullOrEmpty(context.ErrorDescription)
+                                    ? context.AuthenticateFailure?.Message
+                                    : context.ErrorDescription;
                                 context.HandleResponse();
                                 context.Response.ContentType = "application/json";
-                                context.Response.StatusCode = 401;
-                                await context.Response.WriteAsJsonAsync(Response<string>.Error($"401 Not authorized: {error}"));
+                                var statusCode = context?.AuthenticateFailure is SecurityTokenExpiredException
+                                    ? 403
+                                    : 401;
+                                context.Response.StatusCode = statusCode;
+                                await context.Response.WriteAsJsonAsync(Response<string>.Error(statusCode == 403
+                                    ? $"403 Expired token: {error}"
+                                    : $"401 Not authorized: {error}"));
                             }
                         }
                     };

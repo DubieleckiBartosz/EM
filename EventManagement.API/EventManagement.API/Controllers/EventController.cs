@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
 using EventManagement.Application.Features.EventFeatures.Commands.CancelEvent;
 using EventManagement.Application.Features.EventFeatures.Commands.ChangeVisibilityEvent;
 using EventManagement.Application.Features.EventFeatures.Commands.CreateEvent;
@@ -7,7 +8,10 @@ using EventManagement.Application.Features.EventFeatures.Queries.GetEventDetails
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventsBySearch;
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventWithApplications;
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventWithOpinions;
+using EventManagement.Application.Helpers;
+using EventManagement.Application.Models.Dto;
 using EventManagement.Application.Models.Dto.EventDTOs;
+using EventManagement.Application.Models.Enums;
 using EventManagement.Application.Wrappers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -116,15 +120,14 @@ namespace EventManagement.API.Controllers
             return Ok(Response<List<string>>.Ok(response));
         }
 
-        [ProducesResponseType(typeof(Response<List<List<string>>>), 200)]
+        [ProducesResponseType(typeof(Response<EventSearchOptionsDto>), 200)]
         [SwaggerOperation(Summary = "Get search options")]
         [AllowAnonymous]
         [HttpGet("[action]")]
         public IActionResult GetSearchOptions()
         {
-             var categories = EnumHelpers.GetStringValuesFromEnum<EventCategory>();
-
-            return Ok(Response<List<string>>.Ok(response));
+            var response = new EventSearchOptionsDto();
+            return Ok(Response<EventSearchOptionsDto>.Ok(response));
         }
     }
 }

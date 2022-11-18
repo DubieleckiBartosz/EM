@@ -23,6 +23,8 @@ namespace EventManagement.API
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddCors();
+
             services.GetLayersConfig(this.Configuration);
             services.AddControllers();
             services.GetSwaggerConfig();
@@ -54,10 +56,11 @@ namespace EventManagement.API
 
             app.UseCors(builder =>
             {
-                builder
-                    .AllowAnyOrigin()
+                builder.SetIsOriginAllowed(origin => true)
+                    //.AllowAnyOrigin()
                     .AllowAnyMethod()
-                    .AllowAnyHeader();
+                    .AllowAnyHeader()
+                    .AllowCredentials();
             });
 
             app.UseAuthentication();
