@@ -1,6 +1,4 @@
-﻿using System.Security.AccessControl;
-
-namespace EventManagement.Application.Models.Authorization
+﻿namespace EventManagement.Application.Models.Authorization
 {
     public class RegisterModel
     {

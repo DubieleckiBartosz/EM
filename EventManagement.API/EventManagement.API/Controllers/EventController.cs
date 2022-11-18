@@ -9,6 +9,7 @@ using EventManagement.Application.Features.EventFeatures.Queries.GetEventsBySear
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventWithApplications;
 using EventManagement.Application.Features.EventFeatures.Queries.GetEventWithOpinions;
 using EventManagement.Application.Helpers;
+using EventManagement.Application.Models.Dto;
 using EventManagement.Application.Models.Dto.EventDTOs;
 using EventManagement.Application.Models.Enums;
 using EventManagement.Application.Wrappers;
@@ -118,6 +119,16 @@ namespace EventManagement.API.Controllers
             var response = EnumHelpers.GetStringValuesFromEnum<EventCategory>();
 
             return Ok(Response<List<string>>.Ok(response));
+        }
+
+        [ProducesResponseType(typeof(Response<EventSearchOptionsDto>), 200)]
+        [SwaggerOperation(Summary = "Get search options")]
+        [AllowAnonymous]
+        [HttpGet("[action]")]
+        public IActionResult GetSearchOptions()
+        {
+            var response = new EventSearchOptionsDto();
+            return Ok(Response<EventSearchOptionsDto>.Ok(response));
         }
     }
 }

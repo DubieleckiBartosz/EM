@@ -281,7 +281,7 @@ BEGIN
 	WHERE (@eventId IS NULL OR Id = @eventId)
 	AND (@from IS NULL OR StartDate >= @from)
 	AND (@to IS NULL OR EndDate <= @to)
-	AND (@city IS NULL OR City LIKE '%' + City + '%')
+	AND (@city IS NULL OR City LIKE '%' + @city + '%')
 	AND (@eventType IS NULL OR EventType = @eventType)
 	AND (@category IS NULL OR EventCategory = @category)
 	AND (@recurringEvent IS NULL OR RecurringEvent = @recurringEvent)

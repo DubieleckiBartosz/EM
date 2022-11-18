@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 
 namespace EventManagement.API.Controllers
-{
+{ 
     [Route("api/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -88,6 +88,7 @@ namespace EventManagement.API.Controllers
         public async Task<IActionResult> RevokeToken()
         {
             var result = await _userService.RevokeTokenAsync(Request.Cookies[Constants.CookieRefreshToken]);
+            Response.Cookies.Delete(Constants.CookieRefreshToken);
             return Ok(result);
         }
 
@@ -97,6 +98,9 @@ namespace EventManagement.API.Controllers
             {
                 HttpOnly = true,
                 Expires = DateTime.UtcNow.AddDays(5),
+                IsEssential = true,
+                SameSite = SameSiteMode.None,
+                Secure = true,
             };
             Response.Cookies.Append(Constants.CookieRefreshToken, refreshToken, cookieOptions);
         }

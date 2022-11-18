@@ -17,9 +17,7 @@ namespace EventManagement.Application.Models.Dto.EventDTOs
         public string PostalCode { get; set; }
         public string CategoryName { get; set; }
         public string EventType { get; set; }
-        public EventCategory EventCategory { get; set; }
-        //public EventCurrentStatus CurrentStatus { get; set; }
-        //public PlaceType PlaceType { get; set; }
+        public string EventCategory { get; set; } 
         public string PlaceType { get; set; }
         public string CurrentStatus { get; set; }
 
