@@ -24,6 +24,7 @@ namespace EventManagement.API.Controllers
     [ApiController]
     public class EventController : BaseController
     {
+
         [ProducesResponseType(typeof(Response<string>), 400)]
         [ProducesResponseType(typeof(Response<EventDetailsDto>), 200)]
         [SwaggerOperation(Summary = "Get event by identifier")]
